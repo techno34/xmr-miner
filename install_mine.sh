@@ -6,13 +6,8 @@
 pkg update -y && pkg upgrade -y
 pkg install -y wget proot tar git libtalloc libuuid
 
-# --- Download latest XMRig ARM64 ---
-echo "🔁 Fetching latest XMRig release URL..."
-LATEST_URL=$(curl -s https://api.github.com/repos/xmrig/xmrig/releases/latest | grep browser_download_url | grep 'linux-arm64.tar.gz' | cut -d '"' -f 4)
-
-echo "🌐 Downloading XMRig from:"
-echo "$LATEST_URL"
-wget -O xmrig.tar.gz "$LATEST_URL"
+#echo "📥 Downloading XMRig..."
+wget https://github.com/xmrig/xmrig/releases/download/v6.21.1/xmrig-6.21.1-linux-arm64.tar.gz -O xmrig.tar.gz
 
 # --- Extract XMRig ---
 echo "📦 Extracting XMRig..."

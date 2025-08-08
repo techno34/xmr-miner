@@ -1,20 +1,24 @@
-#!/data/data/com.termux/files/usr/bin/bash
-set -e
+#!/bin/bash
 
-WALLET="45WrmXjfk8m3QvvoDBFPQjMoSCUc3zgFvaD5Bqmymxbb3fVmKmDoZwR4F1MPKZ8PA82qndPobuR5HUDjV1HJvXFAJUUuYPC"
-POOL="pool.supportxmr.com:3333"
+# Auto ARM64 build and mining for Termux Android
 
-echo "1. Installing dependencies..."
-pkg update -y || true
-pkg install -y wget tar proot
+# Update & install dependencies
+pkg update -y && pkg upgrade -y
+pkg install -y git build-essential cmake libuv-dev libssl-dev libhwloc-dev
 
-echo "2. Downloading XMRig (linux-arm64)..."
-wget -O xmrig.tar.gz \
-https://github.com/xmrig/xmrig/releases/download/v6.23.0/xmrig-6.23.0-linux-arm64.tar.gz
+# Remove any old xmrig folder
+rm -rf xmrig
 
-echo "3. Extracting..."
-tar -xzf xmrig.tar.gz
-cd xmrig-*
+# Clone XMRig source
+git clone https://github.com/xmrig/xmrig.git
+cd xmrig
 
-echo "4. Running miner..."
-./xmrig -o "$POOL" -u "$WALLET" -p x -k
+# Create build directory
+mkdir build && cd build
+
+# Build for ARM64
+cmake .. -DWITH_HWLOC=OFF
+make -j$(nproc)
+
+# Start mining to your wallet
+./xmrig -o pool.supportxmr.com:3333 -u 45WrmXjfk8m3QvvoDBFPQjMoSCUc3zgFvaD5Bqmymxbb3fVmKmDoZwR4F1MPKZ8PA82qndPobuR5HUDjV1HJvXFAJUUuYPC -k --coin monero --tls

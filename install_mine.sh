@@ -1,34 +1,30 @@
 #!/bin/bash
-
-# Colors for messages
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-
-echo -e "${GREEN}🔹 Installing dependencies...${NC}"
+clear
+echo "🔹 Installing dependencies..."
 pkg update -y && pkg upgrade -y
-pkg install -y git wget tar proot-distro
+pkg install wget tar proot -y
 
-echo -e "${GREEN}🔹 Creating mining folder...${NC}"
-mkdir -p ~/xmr-miner
-cd ~/xmr-miner || exit
+echo "🔹 Downloading XMRig..."
+# Download URL
+XMRIG_URL="https://github.com/xmrig/xmrig/releases/latest/download/xmrig-6.21.3-linux-static-x64.tar.gz"
+wget --tries=3 --timeout=30 -O xmrig.tar.gz "$XMRIG_URL"
 
-echo -e "${GREEN}🔹 Downloading latest XMRig...${NC}"
-# Download latest xmrig prebuilt binary (Linux x64)
-wget https://github.com/xmrig/xmrig/releases/latest/download/xmrig-6.21.3-linux-static-x64.tar.gz -O xmrig.tar.gz
+# Check file size
+if [ ! -s xmrig.tar.gz ]; then
+    echo "❌ Download failed! File is empty."
+    exit 1
+fi
 
-echo -e "${GREEN}🔹 Extracting files...${NC}"
-tar -xvf xmrig.tar.gz --strip-components=1
-rm xmrig.tar.gz
+echo "🔹 Extracting XMRig..."
+tar -xvzf xmrig.tar.gz --strip=1 || {
+    echo "❌ Extraction failed!"
+    exit 1
+}
 
-echo -e "${GREEN}🔹 Creating config.json...${NC}"
+echo "🔹 Creating config.json..."
 cat > config.json <<EOL
 {
-    "api": { "id": null, "worker-id": "termux-miner" },
     "autosave": true,
-    "background": false,
-    "colors": true,
-    "randomx": { "1gb-pages": false },
-    "donate-level": 1,
     "cpu": true,
     "pools": [
         {
@@ -42,7 +38,8 @@ cat > config.json <<EOL
 }
 EOL
 
+echo "🔹 Setting permissions..."
 chmod +x xmrig
 
-echo -e "${GREEN}✅ Setup complete!${NC}"
-echo -e "${GREEN}💡 Start mining with: ./xmrig${NC}"
+echo "✅ Setup complete!"
+echo "💡 Start mining with: ./xmrig --config=config.json"

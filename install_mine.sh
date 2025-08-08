@@ -1,18 +1,30 @@
 #!/bin/bash
 
+# Clean old files
+rm -rf xmrig xmrig.tar.gz xmrig-*
+
 # Update & install dependencies
-pkg update -y
-pkg upgrade -y
+pkg update -y && pkg upgrade -y
 pkg install wget tar -y
 
-# Download latest XMRig
-echo "🔹 Downloading XMRig..."
-wget https://github.com/xmrig/xmrig/releases/download/v6.21.0/xmrig-6.21.0-linux-arm64.tar.gz -O xmrig.tar.gz
+# Latest ARM64 XMRig link (tested)
+XMRIG_URL="https://github.com/xmrig/xmrig/releases/download/v6.21.0/xmrig-6.21.0-linux-arm64.tar.gz"
+
+echo "🔹 Downloading XMRig for ARM64..."
+wget -O xmrig.tar.gz "$XMRIG_URL"
+
+# Check file size
+if [ ! -s xmrig.tar.gz ]; then
+    echo "❌ Download failed! File is empty."
+    exit 1
+fi
 
 # Extract
-echo "🔹 Extracting..."
-tar -xvzf xmrig.tar.gz
-cd xmrig-6.21.0
+echo "🔹 Extracting XMRig..."
+tar -xvzf xmrig.tar.gz || { echo "❌ Extraction failed!"; exit 1; }
+
+# Move into extracted folder
+cd xmrig-6.21.0 || { echo "❌ Directory not found after extraction!"; exit 1; }
 
 # Give execute permission
 chmod +x xmrig
@@ -28,7 +40,7 @@ cat > config.json <<EOL
     "pools": [
         {
             "url": "pool.supportxmr.com:3333",
-            "user": "45WrmXjfk8m3QvvoDBFPQjMoSCUc3zgFvaD5Bqmymxbb3fVmKmDoZwR4F1MPKZ8PA82qndPobuR5HUDjV1HJvXFAJUUuYPC",
+            "user": "YOUR_WALLET_ADDRESS",
             "pass": "x",
             "keepalive": true,
             "tls": false
@@ -38,4 +50,5 @@ cat > config.json <<EOL
 EOL
 
 echo "✅ Setup complete!"
-echo "💡 Start mining with: ./xmrig"
+echo "💡 Start mining with:"
+echo "./xmrig --config=config.json"
